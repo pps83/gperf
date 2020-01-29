@@ -27,7 +27,6 @@
 #include <time.h> /* declares time() */
 #include <math.h> /* declares exp() */
 #include <limits.h> /* defines INT_MIN, INT_MAX, UINT_MAX */
-#include <vector>
 #include "options.h"
 #include "hash-table.h"
 #ifdef _MSC_VER
@@ -996,24 +995,32 @@ Search::compute_partition (bool *undetermined) const
 {
   EquivalenceClass *partition = NULL;
   EquivalenceClass *partition_last = NULL;
-  std::vector<EquivalenceClassList> partition_by_size(10);
+  unsigned partitions_count = 10; // initial count of elements in partitions
+  EquivalenceClassList *partitions = new EquivalenceClassList[partitions_count];
   for (KeywordExt_List *temp = _head; temp; temp = temp->rest())
     {
       KeywordExt *keyword = temp->first();
 
       /* Compute the undetermined characters for this keyword.  */
-      unsigned int *undetermined_chars =
-        new unsigned int[keyword->_selchars_length];
+      unsigned int *undetermined_chars = new unsigned int[keyword->_selchars_length];
       unsigned int undetermined_chars_length = 0;
 
       for (int i = 0; i < keyword->_selchars_length; i++)
         if (undetermined[keyword->_selchars[i]])
           undetermined_chars[undetermined_chars_length++] = keyword->_selchars[i];
 
-      if (undetermined_chars_length + 1 > partition_by_size.size())
-          partition_by_size.resize(undetermined_chars_length + 1);
-      EquivalenceClass *&partition_sz = partition_by_size[undetermined_chars_length].partition;
-      EquivalenceClass *&partition_last_sz = partition_by_size[undetermined_chars_length].partition_last;
+      if (undetermined_chars_length + 1 > partitions_count) // grow partitions
+      {
+          unsigned new_count = undetermined_chars_length + 1 > partitions_count * 2 ?
+              undetermined_chars_length + 1 : partitions_count * 2;
+          EquivalenceClassList *new_array = new EquivalenceClassList[new_count];
+          memcpy(new_array, partitions, sizeof(partitions[0]) * partitions_count);
+          delete[] partitions;
+          partitions = new_array;
+          partitions_count = new_count;
+      }
+      EquivalenceClass *&partition_sz = partitions[undetermined_chars_length].partition;
+      EquivalenceClass *&partition_last_sz = partitions[undetermined_chars_length].partition_last;
 
       /* Look up the equivalence class to which this keyword belongs.  */
       EquivalenceClass *equclass;
@@ -1057,6 +1064,7 @@ Search::compute_partition (bool *undetermined) const
   /* Free some of the allocated memory.  The caller doesn't need it.  */
   for (EquivalenceClass *cls = partition; cls; cls = cls->_next)
     delete[] cls->_undetermined_chars;
+  delete[] partitions;
 
   return partition;
 }
