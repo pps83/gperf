@@ -31,11 +31,6 @@
 #include "hash-table.h"
 #include "config.h"
 
-/* ============================== Portability ============================== */
-
-/* Assume ISO C++ 'for' scoping rule.  */
-#define for if (0) ; else for
-
 /* Dynamically allocated array with dynamic extent:
 
    Example:
@@ -1006,8 +1001,8 @@ Search::compute_partition (bool *undetermined) const
       for (equclass = partition; equclass; equclass = equclass->_next)
         if (equclass->_undetermined_chars_length == undetermined_chars_length
             && equals (equclass->_undetermined_chars, undetermined_chars,
-                       undetermined_chars_length))
-          break;
+                  undetermined_chars_length))
+              break;
       if (equclass == NULL)
         {
           equclass = new EquivalenceClass();
@@ -1022,7 +1017,7 @@ Search::compute_partition (bool *undetermined) const
           else
             partition = equclass;
           partition_last = equclass;
-        }
+      }
       else
         delete[] undetermined_chars;
 
