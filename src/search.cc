@@ -948,6 +948,7 @@ struct EquivalenceClass
   unsigned int          _undetermined_chars_length;
 
   EquivalenceClass *    _next;
+  EquivalenceClass *    _next2; /* links classes with equal _undetermined_chars_length */
 };
 
 struct Step
@@ -983,11 +984,20 @@ equals (const unsigned int *ptr1, const unsigned int *ptr2, unsigned int len)
   return true;
 }
 
+struct EquivalenceClassList
+{
+    EquivalenceClassList() : partition(NULL), partition_last(NULL) {}
+    EquivalenceClass *partition;
+    EquivalenceClass *partition_last;
+};
+
 EquivalenceClass *
 Search::compute_partition (bool *undetermined) const
 {
   EquivalenceClass *partition = NULL;
   EquivalenceClass *partition_last = NULL;
+  unsigned partitions_count = 32; // initial count of elements in partitions
+  EquivalenceClassList *partitions = new EquivalenceClassList[partitions_count];
   for (KeywordExt_List *temp = _head; temp; temp = temp->rest())
     {
       KeywordExt *keyword = temp->first();
@@ -1001,13 +1011,24 @@ Search::compute_partition (bool *undetermined) const
         if (undetermined[keyword->_selchars[i]])
           undetermined_chars[undetermined_chars_length++] = keyword->_selchars[i];
 
+      if (undetermined_chars_length + 1 > partitions_count) // grow partitions
+        {
+          unsigned new_count = undetermined_chars_length + 1 > partitions_count * 2 ?
+              undetermined_chars_length + 1 : partitions_count * 2;
+          EquivalenceClassList *new_array = new EquivalenceClassList[new_count];
+          memcpy(new_array, partitions, sizeof(partitions[0]) * partitions_count);
+          delete[] partitions;
+          partitions = new_array;
+          partitions_count = new_count;
+        }
+      EquivalenceClass *&partition_sz = partitions[undetermined_chars_length].partition;
+      EquivalenceClass *&partition_last_sz = partitions[undetermined_chars_length].partition_last;
+
       /* Look up the equivalence class to which this keyword belongs.  */
       EquivalenceClass *equclass;
-      for (equclass = partition; equclass; equclass = equclass->_next)
-        if (equclass->_undetermined_chars_length == undetermined_chars_length
-            && equals (equclass->_undetermined_chars, undetermined_chars,
-                       undetermined_chars_length))
-          break;
+      for (equclass = partition_sz; equclass; equclass = equclass->_next2)
+          if (equals(equclass->_undetermined_chars, undetermined_chars, undetermined_chars_length))
+              break;
       if (equclass == NULL)
         {
           equclass = new EquivalenceClass();
@@ -1017,12 +1038,18 @@ Search::compute_partition (bool *undetermined) const
           equclass->_undetermined_chars = undetermined_chars;
           equclass->_undetermined_chars_length = undetermined_chars_length;
           equclass->_next = NULL;
+          equclass->_next2 = NULL;
           if (partition)
             partition_last->_next = equclass;
           else
             partition = equclass;
           partition_last = equclass;
-        }
+          if (partition_sz)
+              partition_last_sz->_next2 = equclass;
+          else
+              partition_sz = equclass;
+          partition_last_sz = equclass;
+      }
       else
         delete[] undetermined_chars;
 
@@ -1039,6 +1066,7 @@ Search::compute_partition (bool *undetermined) const
   /* Free some of the allocated memory.  The caller doesn't need it.  */
   for (EquivalenceClass *cls = partition; cls; cls = cls->_next)
     delete[] cls->_undetermined_chars;
+  delete[] partitions;
 
   return partition;
 }
