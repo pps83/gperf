@@ -29,7 +29,11 @@
 #include <limits.h> /* defines INT_MIN, INT_MAX, UINT_MAX */
 #include "options.h"
 #include "hash-table.h"
+#ifdef _MSC_VER
+#define HAVE_DYNAMIC_ARRAY 0
+#else
 #include "config.h"
+#endif
 
 /* Dynamically allocated array with dynamic extent:
 

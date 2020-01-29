@@ -28,7 +28,11 @@
 #include <limits.h> /* defines SCHAR_MAX etc. */
 #include "options.h"
 #include "version.h"
+#ifdef _MSC_VER
+#define HAVE_DYNAMIC_ARRAY 0
+#else
 #include "config.h"
+#endif
 
 /* ============================== Portability ============================== */
 
