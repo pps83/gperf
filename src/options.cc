@@ -26,9 +26,10 @@
 #include <string.h> /* declares strcmp() */
 #include <ctype.h>  /* declares isdigit() */
 #include <limits.h> /* defines CHAR_MAX */
-#include "filename.h"
 #include "getopt.h"
 #include "version.h"
+
+#define ISSLASH(c) (c == '/' || c == '\\')
 
 /* Global option coordinator for the entire program.  */
 Options option;
