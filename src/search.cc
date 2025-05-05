@@ -37,9 +37,6 @@
 
 /* ============================== Portability ============================== */
 
-/* Assume ISO C++ 'for' scoping rule.  */
-#define for if (0) ; else for
-
 /* Dynamically allocated array with dynamic extent:
 
    Example:
