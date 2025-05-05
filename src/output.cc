@@ -31,6 +31,12 @@
 #include "options.h"
 #include "version.h"
 
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic ignored "-Wbitwise-instead-of-logical"
+#pragma GCC diagnostic ignored "-Wbitwise-conditional-parentheses"
+#pragma GCC diagnostic ignored "-Wvla-cxx-extension"
+#pragma GCC diagnostic ignored "-Wformat-zero-length"
+#endif
 /* ============================== Portability ============================== */
 
 /* Dynamically allocated array with dynamic extent:

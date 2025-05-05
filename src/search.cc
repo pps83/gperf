@@ -35,6 +35,9 @@
 #include "arraylist.h"
 #include "hash-table.h"
 
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic ignored "-Wvla-cxx-extension"
+#endif
 /* ============================== Portability ============================== */
 
 /* Dynamically allocated array with dynamic extent:
