@@ -84,137 +84,39 @@ There are three ways to create binaries of this package for Microsoft Windows:
    http://landinghub.visualstudio.com/visual-cpp-build-tools (it's the file
    visualcppbuildtools_full.exe).
 
-   This recipe requires also a Cygwin environment (with 'bash', the common POSIX
+   This recipe requires also a msys2 environment (with 'bash', the common POSIX
    commands, and 'make') as a build environment. Building with 'nmake' is not
    supported.
    For this, you need to install
-     * Cygwin (from https://cygwin.com/),
-     * some packages available from the Cygwin package installer:
-         make
+     * msys2
+     * make (can be installed with `pacman -S make`)
 
    You also need the scripts 'ar-lib' and 'compile' from
      https://git.savannah.gnu.org/gitweb/?p=automake.git;a=blob_plain;f=lib/ar-lib;hb=HEAD
      https://git.savannah.gnu.org/gitweb/?p=automake.git;a=blob_plain;f=lib/compile;hb=HEAD
    respectively.
    They may also be included in this package, in directory 'build-aux/'.
-   Save them; the instructions below assume that you stored them in $HOME/msvc/.
+   If not, save them; the instructions below assume that you stored them in 'build-aux/'.
    Make them executable:
       chmod a+x ar-lib compile
+   
+   Start Visual Studio developer command prompt (x86 or x64).
+   From VS developer command prompt start msys2 shell: C:\msys64\msys2_shell.cmd -mingw64 -use-full-path
+   Run configure:
 
-   Start a bash (from Cygwin).
-
-   Make sure that the MSVC tools ("cl" etc.) are found in PATH and the
-   environment variables INCLUDE and LIB are set appropriately.
-   In a typical MSVC 9.0 installation, it can be achieved by running
-     C:\Program Files\Microsoft Visual Studio 9.0\Common7\Tools\vsvars32.bat
-   In a typical MSVC 14.0 installation on Windows 10, it can be achieved
-   - for creating 32-bit binaries: through the following bash commands:
-
-      # Set environment variables for using MSVC 14,
-      # for creating native 32-bit Windows executables.
-
-      # Windows C library headers and libraries.
-      WindowsCrtIncludeDir='C:\Program Files (x86)\Windows Kits\10\Include\10.0.10240.0\ucrt'
-      WindowsCrtLibDir='C:\Program Files (x86)\Windows Kits\10\Lib\10.0.10240.0\ucrt\'
-      INCLUDE="${WindowsCrtIncludeDir};$INCLUDE"
-      LIB="${WindowsCrtLibDir}x86;$LIB"
-
-      # Windows API headers and libraries.
-      WindowsSdkIncludeDir='C:\Program Files (x86)\Windows Kits\8.1\Include\'
-      WindowsSdkLibDir='C:\Program Files (x86)\Windows Kits\8.1\Lib\winv6.3\um\'
-      INCLUDE="${WindowsSdkIncludeDir}um;${WindowsSdkIncludeDir}shared;$INCLUDE"
-      LIB="${WindowsSdkLibDir}x86;$LIB"
-
-      # Visual C++ tools, headers and libraries.
-      VSINSTALLDIR='C:\Program Files (x86)\Microsoft Visual Studio 14.0'
-      VCINSTALLDIR="${VSINSTALLDIR}"'\VC'
-      PATH=`cygpath -u "${VCINSTALLDIR}"`/bin:"$PATH"
-      INCLUDE="${VCINSTALLDIR}"'\include;'"${INCLUDE}"
-      LIB="${VCINSTALLDIR}"'\lib;'"${LIB}"
-
-      export INCLUDE LIB
-
-   - for creating 64-bit binaries: through the following bash commands:
-
-     # Set environment variables for using MSVC 14,
-     # for creating native 64-bit Windows executables.
-
-     # Windows C library headers and libraries.
-     WindowsCrtIncludeDir='C:\Program Files (x86)\Windows Kits\10\Include\10.0.10240.0\ucrt'
-     WindowsCrtLibDir='C:\Program Files (x86)\Windows Kits\10\Lib\10.0.10240.0\ucrt\'
-     INCLUDE="${WindowsCrtIncludeDir};$INCLUDE"
-     LIB="${WindowsCrtLibDir}x64;$LIB"
-
-     # Windows API headers and libraries.
-     WindowsSdkIncludeDir='C:\Program Files (x86)\Windows Kits\8.1\Include\'
-     WindowsSdkLibDir='C:\Program Files (x86)\Windows Kits\8.1\Lib\winv6.3\um\'
-     INCLUDE="${WindowsSdkIncludeDir}um;${WindowsSdkIncludeDir}shared;$INCLUDE"
-     LIB="${WindowsSdkLibDir}x64;$LIB"
-
-     # Visual C++ tools, headers and libraries.
-     VSINSTALLDIR='C:\Program Files (x86)\Microsoft Visual Studio 14.0'
-     VCINSTALLDIR="${VSINSTALLDIR}"'\VC'
-     PATH=`cygpath -u "${VCINSTALLDIR}"`/bin/amd64:"$PATH"
-     INCLUDE="${VCINSTALLDIR}"'\include;'"${INCLUDE}"
-     LIB="${VCINSTALLDIR}"'\lib\amd64;'"${LIB}"
-
-     export INCLUDE LIB
-
-   Building 32-bit binaries with MSVC is achieved through the following
-   preparation, configure, and build commands:
-
-      PATH=/usr/local/msvc32/bin:$PATH
-      export PATH
-
-      win32_target=_WIN32_WINNT_WINXP   # for MSVC 9.0
-      win32_target=_WIN32_WINNT_VISTA   # possibly for MSVC >= 10.0
-      win32_target=_WIN32_WINNT_WIN7    # possibly for MSVC >= 10.0
-      win32_target=_WIN32_WINNT_WIN8    # possibly for MSVC >= 10.0
-
-      ./configure --host=i686-w64-mingw32 --prefix=/usr/local/msvc32 \
-            CC="$HOME/msvc/compile cl -nologo" \
-            CFLAGS="-MD" \
-            CXX="$HOME/msvc/compile cl -nologo" \
-            CXXFLAGS="-MD" \
-            CPPFLAGS="-D_WIN32_WINNT=$win32_target -I/usr/local/msvc32/include" \
-            LDFLAGS="-L/usr/local/msvc32/lib" \
+      ./configure --host=x86_64-w64-mingw32 \
+            CC="`pwd`/build-aux/compile cl -nologo -std:c11 -O2" \
+            CFLAGS="-MT" \
+            CXX="`pwd`/build-aux/compile cl -nologo -std:c++11 -O2" \
+            CXXFLAGS="-MT" \
+            CPPFLAGS="-D_WIN32_WINNT=_WIN32_WINNT_WIN7" \
             LD="link" \
             NM="dumpbin -symbols" \
             STRIP=":" \
-            AR="$HOME/msvc/ar-lib lib" \
+            AR="`pwd`/build-aux/ar-lib lib" \
             RANLIB=":"
       make
       make check
-
-   Building 64-bit binaries with MSVC is achieved through the following
-   preparation, configure, and build commands:
-
-      PATH=/usr/local/msvc64/bin:$PATH
-      export PATH
-
-      win32_target=_WIN32_WINNT_WINXP   # for MSVC 9.0
-      win32_target=_WIN32_WINNT_VISTA   # possibly for MSVC >= 10.0
-      win32_target=_WIN32_WINNT_WIN7    # possibly for MSVC >= 10.0
-      win32_target=_WIN32_WINNT_WIN8    # possibly for MSVC >= 10.0
-
-      ./configure --host=x86_64-w64-mingw32 --prefix=/usr/local/msvc64 \
-            CC="$HOME/msvc/compile cl -nologo" \
-            CFLAGS="-MD" \
-            CXX="$HOME/msvc/compile cl -nologo" \
-            CXXFLAGS="-MD" \
-            CPPFLAGS="-D_WIN32_WINNT=$win32_target -I/usr/local/msvc64/include" \
-            LDFLAGS="-L/usr/local/msvc64/lib" \
-            LD="link" \
-            NM="dumpbin -symbols" \
-            STRIP=":" \
-            AR="$HOME/msvc/ar-lib lib" \
-            RANLIB=":"
-      make
-      make check
-
-   Installation:
-
-      make install
 
 ===============================================================================
 3) Binaries for the Cygwin environment.
