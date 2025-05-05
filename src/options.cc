@@ -989,7 +989,7 @@ Options::parse_options (int argc, char *argv[])
             bool invalid = false;
             char *endptr;
 
-            numerator = strtod (/*getopt*/optarg, &endptr);
+            numerator = strtof (/*getopt*/optarg, &endptr);
             if (endptr == /*getopt*/optarg)
               invalid = true;
             else if (*endptr != '\0')
@@ -997,7 +997,7 @@ Options::parse_options (int argc, char *argv[])
                 if (*endptr == '/')
                   {
                     char *denomptr = endptr + 1;
-                    denominator = strtod (denomptr, &endptr);
+                    denominator = strtof (denomptr, &endptr);
                     if (endptr == denomptr || *endptr != '\0')
                       invalid = true;
                   }
