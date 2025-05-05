@@ -35,14 +35,6 @@
 
 typedef Keyword_Factory<KeywordExt> KeywordExt_Factory;
 
-template <>
-KeywordExt *
-Keyword_Factory<KeywordExt>::create_keyword (const char *allchars, int allchars_length,
-                                             const char *rest, unsigned int lineno)
-{
-  return new KeywordExt (allchars, allchars_length, rest, lineno);
-}
-
 /* ------------------------------------------------------------------------- */
 
 int

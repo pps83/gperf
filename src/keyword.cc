@@ -162,6 +162,14 @@ char empty_string[1] = "";
 
 #endif /* not defined __OPTIMIZE__ */
 
+template <>
+KeywordExt*
+Keyword_Factory<KeywordExt>::create_keyword(const char* allchars, int allchars_length,
+    const char* rest, unsigned int lineno)
+{
+    return new KeywordExt(allchars, allchars_length, rest, lineno);
+}
+
 /* ------------------------------------------------------------------------- */
 
 /* Explicit template instantiations.  Needed to avoid link-time errors.
