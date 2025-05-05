@@ -405,6 +405,27 @@
 
 #endif /* _GL_CXXDEFS_H */
 
+
+#if (__GNUC__ + (__GNUC_MINOR__ >= 4) > 4) && !defined __clang__
+# define _GL_ATTRIBUTE_SPEC_PRINTF_STANDARD __gnu_printf__
+#else
+# define _GL_ATTRIBUTE_SPEC_PRINTF_STANDARD __printf__
+#endif
+
+   /* An __attribute__ __format__ specifier for a function that takes a format
+      string and arguments, where the format string directives are the ones of the
+      system printf(), rather than the ones standardized by ISO C99 and POSIX.
+      _GL_ATTRIBUTE_SPEC_PRINTF_SYSTEM  */
+      /* On mingw, Gnulib sets __USE_MINGW_ANSI_STDIO in order to get closer to
+         the standards.  The macro GNULIB_PRINTF_ATTRIBUTE_FLAVOR_GNU indicates
+         whether this change is effective.  On older mingw, it is not.  */
+#if GNULIB_PRINTF_ATTRIBUTE_FLAVOR_GNU
+# define _GL_ATTRIBUTE_SPEC_PRINTF_SYSTEM _GL_ATTRIBUTE_SPEC_PRINTF_STANDARD
+#else
+# define _GL_ATTRIBUTE_SPEC_PRINTF_SYSTEM __printf__
+#endif
+
+
 #if GNULIB_VFPRINTF_POSIX
 # define _GL_ATTRIBUTE_SPEC_PRINTF_ERROR _GL_ATTRIBUTE_SPEC_PRINTF_STANDARD
 #else
@@ -417,6 +438,9 @@
 #if defined __GNUC__ || defined __clang__
 /* Use 'unreachable' to tell the compiler when the function call does not
    return.  */
+#ifndef unreachable
+#define unreachable __builtin_unreachable
+#endif
 # define __gl_error_call1(function, status, ...) \
     ((function) (status, __VA_ARGS__), \
      (status) != 0 ? unreachable () : (void) 0)

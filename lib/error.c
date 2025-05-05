@@ -109,6 +109,7 @@ extern void __error_at_line (int status, int errnum, const char *file_name,
 #  else
 #   include <io.h>
 #  endif
+const char* getprogname(void);
 # endif
 
 /* The gnulib override of fcntl is not needed in this file.  */

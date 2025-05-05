@@ -37,6 +37,15 @@
 /* Get errno. */
 #include <errno.h>
 
+#if !defined(S_ISREG) && defined(S_IFMT) && defined(S_IFREG)
+#define S_ISREG(m) (((m) & S_IFMT) == S_IFREG)
+#endif
+#if defined(_WIN32) && !defined(__MINGW32__)
+#define fseeko _fseeki64
+#define ftello _ftelli64
+void* memset_explicit(void* s, int c, size_t len);
+#endif
+
 /* Read a STREAM and return a newly allocated string with the content,
    and set *LENGTH to the length of the string.  The string is
    zero-terminated, but the terminating zero byte is not counted in
@@ -61,11 +70,11 @@ fread_file (FILE *stream, int flags, size_t *length)
 
     if (fstat (fileno (stream), &st) >= 0 && S_ISREG (st.st_mode))
       {
-        off_t pos = ftello (stream);
+        int64_t pos = ftello (stream);
 
         if (pos >= 0 && pos < st.st_size)
           {
-            off_t alloc_off = st.st_size - pos;
+            int64_t alloc_off = st.st_size - pos;
 
             /* '1' below, accounts for the trailing NUL.  */
             if (PTRDIFF_MAX - 1 < alloc_off)
@@ -74,7 +83,7 @@ fread_file (FILE *stream, int flags, size_t *length)
                 return NULL;
               }
 
-            alloc = alloc_off + 1;
+            alloc = (size_t)(alloc_off + 1);
           }
       }
   }

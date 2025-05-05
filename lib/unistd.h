@@ -17,6 +17,16 @@
 
 #ifndef _GL_UNISTD_H
 
+#if defined(__GNUC__) || defined(__clang__)
+#if defined(_WIN32) && !defined(__clang__)
+#define _GL_ATTRIBUTE_FORMAT_PRINTF_STANDARD(fmtIndex, argIndex) __attribute__((__format__(__gnu_printf__, fmtIndex, argIndex)))
+#else
+#define _GL_ATTRIBUTE_FORMAT_PRINTF_STANDARD(fmtIndex, argIndex) __attribute__((__format__(__printf__, fmtIndex, argIndex)))
+#endif
+#elif defined(_MSC_VER)
+#define _GL_ATTRIBUTE_FORMAT_PRINTF_STANDARD(fmtIndex, argIndex)
+#endif
+
 #if __GNUC__ >= 3
 
 #endif
